@@ -260,9 +260,9 @@ class NewLocalGameWindow(Toplevel):
         self.AB_name_entry = Entry(self, width=30)
         self.AB_name_entry.insert(0, USERNAME)
         self.AB_name_entry.grid(row=2, column=1, columnspan=3, sticky=W)
-        self.AB_player_var.trace(
-            'w', lambda x, y, z: self.toggle_entry(self.AB_name_entry,
-                                                   self.AB_player_var))
+        self.AB_player_var.trace_add('write', (lambda x, y, z:
+            self.toggle_entry(self.AB_name_entry, self.AB_player_var))
+        )
 
         ab_label = Label(self, text='ab player:')
         ab_label.grid(row=3, column=0, sticky=E)
@@ -281,9 +281,9 @@ class NewLocalGameWindow(Toplevel):
         ab_name_label.grid(row=4, column=0, sticky=E)
         self.ab_name_entry = Entry(self, width=30, state=DISABLED)
         self.ab_name_entry.grid(row=4, column=1, columnspan=3, sticky=W)
-        self.ab_player_var.trace(
-            'w', lambda x, y, z: self.toggle_entry(self.ab_name_entry,
-                                                   self.ab_player_var))
+        self.ab_player_var.trace_add('write', (lambda x, y, z:
+            self.toggle_entry(self.ab_name_entry, self.ab_player_var))
+        )
 
         submit = Button(self, text='Play', command=self.start_game)
         submit.grid(row=5, column=1)
