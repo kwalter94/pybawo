@@ -42,7 +42,7 @@ class Malume(Player):
         self.game_history = None
 
         self.ponder_thread = None
-        self.stop_ponder = False
+        self._stop_ponder = False
         self.vars = {
             'ponder_depth': 6,
             'stop_ponder': 0,
@@ -59,7 +59,7 @@ class Malume(Player):
 
     def new_game(self, field='ab', **kwargs):
         if self.ponder_thread:
-            self.stop_ponder = True
+            self._stop_ponder = True
             self.ponder_thread.join()
             self.ponder_thread = None
         self.game_history = bao.new_game(**kwargs)
@@ -87,7 +87,7 @@ class Malume(Player):
 
     def stop_ponder(self):
         if self.ponder_thread:
-            self.stop_ponder = True
+            self._stop_ponder = True
             self.ponder_thread.join()
             self.ponder_thread = None
             return True
@@ -116,8 +116,7 @@ class Malume(Player):
                 self.vars[argv[0]] = int(argv[1])
                 self.arbiter.message('set ok')
             else:
-                self.arbiter.message(
-                    'Error: var ({}) not known'.format(argv[0]))
+                self.arbiter.message('Error: var ({}) not known'.format(argv[0]))
         elif cmd == 'stop' or cmd == 'hault':
             self.stop_ponder()
             self.arbiter.message('Pondering haulted, will restart on go')
@@ -135,11 +134,11 @@ class Malume(Player):
                 response += key + ': ' + str(value) + '\n'
             self.arbiter.message(response)
         else:
-            # self.arbiter.message('Whatever that was... Ignoring it')
+            self.arbiter.message('Invalid command.')
             pass
 
     def forfeit(self):
-        self.stop_ponder = True
+        self._stop_ponder = True
 
     def undo(self):
         print("Malume undo!")
@@ -167,11 +166,11 @@ class Malume(Player):
         """Start pondering on next move if possible."""
         if threaded:
             self.ponder_thread = threading.Thread(target=self.ponder,
-                                                   args=(callback, False))
+                                                  args=(callback, False))
             self.ponder_thread.start()
         else:
             self.nodes_pondered = 0
-            self.stop_ponder = False
+            self._stop_ponder = False
             state = self.game_history.get_current_node()[1]
             start_time = time.time()
             move, score = self.get_best_move(state,
@@ -181,12 +180,12 @@ class Malume(Player):
             if self.vars['verbose']:
                 self.arbiter.message(
                     'Ponder done: searched {} nodes in {} seconds'.format(
-                        self.nodes_pondered, ponder_time, move))
+                        self.nodes_pondered, ponder_time)
+                )
             callback(move)
             self.ponder_thread = None
 
-    def get_best_move(self, state, max_player, depth, alpha=MIN_INT,
-                       beta=MAX_INT):
+    def get_best_move(self, state, max_player, depth, alpha=MIN_INT, beta=MAX_INT):
         # Using negamax ponder
         moves = [m for m in state.get_moves() if m is not None]
         if len(moves) == 1:
@@ -199,9 +198,9 @@ class Malume(Player):
 
         for move in moves:
             child = state.get_child(move)
-##            if child == None:
-##                continue    # long move...
-            if self.stop_ponder:
+            if child == None:
+                continue    # long move...
+            if self._stop_ponder:
                 raise SystemExit()
             hole, direction, mod = move.split_move(move)
             if (state.in_namua_phase()
@@ -256,22 +255,31 @@ class Malume(Player):
 
     def eval_state(self, state, max_player, depth):
         if state.is_game_over():
-            return 0
+            return MAX_INT if state.get_player() == max_player else 0
             
         score = 0.0
         board = state.get_board()
 
         for hole in board.holes():
             v = board[hole]
-            if board.hole_in_field(hole, state.get_player()):
-                score += v
-            else:
-                if state.in_namua_phase():
-                    if v == 0:
-                        score += 1
+            if board.hole_in_field(hole, state.get_player()):   # Hole belongs to current player
+                if hole[0] in 'Aa':
+                    score += 0.5 * v    # Avoid holding large values in front holes
                 else:
-                    if v <= 1:
+                    score += v
+            elif state.in_namua_phase() and v == 0 and hole[0] in 'Aa':
+                score += 1.5
+            elif state.in_mtaji_phase():
+                if hole[0] in 'Aa':
+                    if v == 0:
+                        score += 2
+                    else:
                         score += 1
+                elif v < 2:
+                    score += 1
+
+        if state.is_mtaji():
+            score *= 1.5
             
         if state.get_player() == max_player:
             return int(score)
