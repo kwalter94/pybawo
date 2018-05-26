@@ -6,7 +6,6 @@ from theme import load_image
 
 import gameWindow
 
-
 def main():
     main_window = Tk()
     main_window.title('Bawo')
@@ -17,11 +16,6 @@ def main():
     main_window.config(menu=menu)
 
     file_menu = Menu(menu, relief=FLAT, tearoff=False)
-    file_menu.add_command(
-        label='New Game',
-        accelerator='Ctrl+N',
-        command=lambda : gameWindow.NewGameWindow(main_window))
-    main_window.bind('<Control-KeyPress-n>', lambda e: NewGameWindow(self))
     file_menu.add_command(label='Quit', accelerator='Ctrl+Q',
                           command=main_window.destroy)
     main_window.bind('<Control-KeyPress-q>', lambda e: main_window.destroy)
@@ -38,9 +32,8 @@ def main():
     logo_label = Label(main_window, image=logo_image)
     logo_label.pack(side=TOP, fill=BOTH)
 
-    b1 = Button(main_window,
-                text='New Local Game',
-                command=lambda : newGameWindow.NewGameWindow(main_window))
+    b1 = Button(main_window, text='New Local Game',
+                command=lambda : gameWindow.NewLocalGameWindow(main_window))
     b1.pack(side=TOP, fill=BOTH)
 
     b2 = Button(main_window, text='New Networked Game', command=lambda : None)

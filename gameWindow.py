@@ -122,7 +122,7 @@ class GameWindow(Toplevel):
         
         self.board_view.update(self.game.get_current_node()[1].get_board())
 
-        self.history_view.set_game(self.game);
+        self.history_view.set_game(self.game)
         self.history_view.set_board_view(self.board_view)
 
         p = self.players[self.game.get_rules().player_starting]
@@ -222,7 +222,7 @@ class GameWindow(Toplevel):
             self.pending_undo += 1
 
 
-class NewGameWindow(Toplevel):
+class NewLocalGameWindow(Toplevel):
     def __init__(self, master):
         Toplevel.__init__(self, master)
         self.title("New game")
@@ -320,7 +320,7 @@ class NewGameWindow(Toplevel):
             ab_player = player.Malume()
             ab_player.new_game(field='ab', variant=variant)
 
-        game_window = gameWindow.GameWindow()
+        game_window = GameWindow()
         game_window.new_game(variant, AB_player=AB_player, ab_player=ab_player)
         self.destroy()
 
