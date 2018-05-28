@@ -2,11 +2,35 @@
 from tkinter import *
 from tkinter.ttk import *
 
+import argparse
+import os
+import sys
+
 from theme import load_image
 
+import config
 import gameWindow
 
+if os.name == 'nt':
+    CONFIG_PATH = os.path.join(os.environ['HOMEPATH'], '_pybawo.ini')
+else:
+    CONFIG_PATH = os.path.join(os.environ['HOME'], '.pybawo.ini')
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', default=CONFIG_PATH)
+    parser.add_argument('--version', action='store_true')
+
+    args = parser.parse_args(sys.argv[1:])
+
+    if args.version:
+        print('pybawo 0.2')
+        exit(0)
+
+    config.load_config(args.config)
+    run()
+
+def run():
     main_window = Tk()
     main_window.title('Bawo')
     main_window.minsize(200, 150)
@@ -44,4 +68,5 @@ def main():
 
     main_window.mainloop()
 
-main()
+if __name__ == '__main__':
+    main()
