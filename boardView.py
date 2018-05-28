@@ -34,7 +34,7 @@ class BoardView(Canvas):
 
     def get_themes(self):
         themes = set()
-        for f in os.listdir(theme.THEME_PATH):
+        for f in os.listdir(theme.THEME_DIR_PATH):
             if f.startswith('.'):
                 continue
             themes.add(os.path.splitext(f)[0])
